@@ -8,6 +8,8 @@ export { ShareIcon } from "./ShareIcon";
 export { SpinnerIcon } from "./SpinnerIcon";
 export { StarIcon } from "./StarIcon";
 export { WarningIcon } from "./WarningIcon";
+export { SaveIcon } from "./SaveIcon";
+export { PlayIcon } from "./PlayIcon";
 
 // For backward compatibility to prevent breaking existing code
 export { StarIcon as LightningIcon } from "./StarIcon";

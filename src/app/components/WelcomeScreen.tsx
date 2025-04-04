@@ -2,6 +2,7 @@ import React from "react";
 import { EmojiGuesserData, ThemeConfig } from "../types";
 import { useFarcaster } from "./FarcasterProvider";
 import Image from "next/image";
+import { PlayIcon } from "./icons";
 
 interface WelcomeScreenProps {
   gameData?: EmojiGuesserData;
@@ -17,6 +18,13 @@ export default function WelcomeScreen({
   onStart,
 }: WelcomeScreenProps) {
   const { context, loading } = useFarcaster();
+
+  /**
+   * Handles checking user's games history and logs to console
+   */
+  const handleCheckGames = () => {
+    console.log("Checking my games history...");
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-indigo-50 via-cyan-50 to-teal-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-800">
@@ -65,7 +73,22 @@ export default function WelcomeScreen({
               disabled={loading}
               className="px-10 py-5 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 text-white font-bold text-xl hover:from-indigo-700 hover:to-cyan-700 transition-all transform hover:scale-105 shadow-xl disabled:opacity-70 shine mx-auto"
             >
-              {loading ? "Loading..." : "Start Playing Now"}
+              {loading ? (
+                "Loading..."
+              ) : (
+                <>
+                  <PlayIcon className="h-6 w-6 mr-2 inline" />
+                  Start Playing Now
+                </>
+              )}
+            </button>
+
+            {/* Check My Games Button */}
+            <button
+              onClick={handleCheckGames}
+              className="mt-3 px-5 py-2 rounded-lg bg-white text-indigo-600 border border-indigo-200 font-medium text-sm hover:bg-indigo-50 transition-all transform hover:scale-102 shadow-md mx-auto flex items-center justify-center"
+            >
+              My Previous Plays
             </button>
           </div>
 

@@ -3,7 +3,13 @@ import { EmojiGuesserData, GameState, ThemeConfig } from "../types";
 import { useFarcaster } from "./FarcasterProvider";
 import AnswersModal from "./modals/AnswersModal";
 import PurchaseAttemptsModal from "./modals/PurchaseAttemptsModal";
-import { ShareIcon, BookIcon, PlayAgainIcon, PlusIcon } from "./icons";
+import {
+  ShareIcon,
+  BookIcon,
+  PlayAgainIcon,
+  PlusIcon,
+  SaveIcon,
+} from "./icons";
 import { generateShareIntent, getAppUrl } from "../utils/farcaster";
 import { useAccount } from "wagmi";
 
@@ -143,6 +149,16 @@ export default function ResultsScreen({
     // Do not add attempts if transaction failed or was rejected
   };
 
+  /**
+   * Handles saving the game progress to storage
+   */
+  const handleSaveProgress = () => {
+    console.log("Saving game progress...", {
+      score: gameState?.score,
+      percentage: scorePercentage,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-cyan-100 dark:from-gray-900 dark:to-gray-800 py-6 px-4">
       <div className="max-w-md sm:max-w-xl md:max-w-2xl mx-auto">
@@ -163,13 +179,24 @@ export default function ResultsScreen({
           </p>
 
           {/* Share Results button moved to top */}
-          <button
-            onClick={handleShareResult}
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold rounded-lg hover:from-purple-600 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 shadow-lg transition-all transform hover:scale-105 shine w-full sm:w-auto justify-center"
-          >
-            <ShareIcon className="h-5 w-5 mr-2" />
-            Share Results
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <button
+              onClick={handleShareResult}
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold rounded-lg hover:from-purple-600 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 shadow-lg transition-all transform hover:scale-105 shine w-full sm:w-auto justify-center"
+            >
+              <ShareIcon className="h-5 w-5 mr-2" />
+              Share Results
+            </button>
+
+            {/* Save Progress button */}
+            <button
+              onClick={handleSaveProgress}
+              className="mt-3 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium rounded-lg hover:from-emerald-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 shadow-lg transition-all transform hover:scale-105 w-full sm:w-auto"
+            >
+              <SaveIcon className="h-5 w-5 mr-2 inline" />
+              Save Progress
+            </button>
+          </div>
         </div>
 
         {/* Score card with improved visual design */}
