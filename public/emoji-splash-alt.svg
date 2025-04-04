@@ -1,0 +1,27 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4338ca" />
+      <stop offset="100%" stop-color="#7e22ce" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="200" height="200" fill="url(#bg)" rx="20" />
+  
+  <!-- Emoji bubble background -->
+  <circle cx="100" cy="75" r="45" fill="#ffffff" opacity="0.15" />
+  
+  <!-- Emoji grid -->
+  <g transform="translate(100, 75)">
+    <text x="-25" y="-15" font-size="25" text-anchor="middle">🤔</text>
+    <text x="25" y="-15" font-size="25" text-anchor="middle">🎮</text>
+    <text x="-25" y="25" font-size="25" text-anchor="middle">🧩</text>
+    <text x="25" y="25" font-size="25" text-anchor="middle">🎯</text>
+  </g>
+  
+  <!-- App Name -->
+  <text x="100" y="150" font-family="'Geist', sans-serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#ffffff">Emoji Guesser</text>
+  <text x="100" y="175" font-family="'Geist', sans-serif" font-size="12" text-anchor="middle" fill="#ffffff" opacity="0.8">Test your emoji skills!</text>
+</svg> 

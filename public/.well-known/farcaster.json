@@ -1,0 +1,20 @@
+{
+  "frame": {
+    "version": "1",
+    "name": "Emoji Guesser",
+    "homeUrl": "https://emoji-guesser.vercel.app",
+    "iconUrl": "https://emoji-guesser.vercel.app/emoji-splash.png",
+    "imageUrl": "https://emoji-guesser.vercel.app/emoji-frame.png",
+    "buttonTitle": "Start Guessing",
+    "splashImageUrl": "https://emoji-guesser.vercel.app/emoji-splash-alt.png",
+    "splashBackgroundColor": "#4338ca"
+  },
+  "triggers": [
+    {
+      "type": "cast",
+      "id": "game-results",
+      "url": "https://emoji-guesser.vercel.app/api/cast-trigger",
+      "name": "Share Your Score"
+    }
+  ]
+}

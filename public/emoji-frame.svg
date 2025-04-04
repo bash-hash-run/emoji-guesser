@@ -1,0 +1,39 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+    <linearGradient id="text" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#e0e7ff" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="800" fill="url(#bg)" />
+  
+  <!-- Decorative emojis -->
+  <text x="200" y="200" font-size="80" opacity="0.2">🧩</text>
+  <text x="900" y="300" font-size="80" opacity="0.2">🤔</text>
+  <text x="300" y="600" font-size="80" opacity="0.2">🎮</text>
+  <text x="1000" y="650" font-size="80" opacity="0.2">🎯</text>
+  
+  <!-- Main emoji puzzle example -->
+  <g transform="translate(600, 280)">
+    <rect width="300" height="120" rx="20" fill="#ffffff" opacity="0.15" />
+    <text x="-80" y="20" font-size="90" text-anchor="middle">🍎</text>
+    <text x="0" y="20" font-size="50" text-anchor="middle">+</text>
+    <text x="80" y="20" font-size="90" text-anchor="middle">🥧</text>
+    <text x="0" y="70" font-size="30" font-family="'Geist', sans-serif" text-anchor="middle" fill="#ffffff">Can you guess?</text>
+  </g>
+  
+  <!-- Title -->
+  <text x="600" y="500" font-family="'Geist', sans-serif" font-size="64" font-weight="bold" text-anchor="middle" fill="url(#text)">Emoji Guesser</text>
+  <text x="600" y="560" font-family="'Geist', sans-serif" font-size="32" text-anchor="middle" fill="#ffffff" opacity="0.8">Test your emoji interpretation skills!</text>
+  
+  <!-- Call to action -->
+  <rect x="450" y="620" width="300" height="80" rx="40" fill="#ffffff" />
+  <text x="600" y="670" font-family="'Geist', sans-serif" font-size="28" font-weight="bold" text-anchor="middle" fill="#4f46e5">Start Playing!</text>
+</svg> 

@@ -1,0 +1,30 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="256" fill="url(#bg)" />
+  
+  <!-- Emoji face -->
+  <circle cx="256" cy="256" r="180" fill="#FFDD67" />
+  
+  <!-- Thinking face elements -->
+  <circle cx="200" cy="220" r="24" fill="#664E27" />
+  <circle cx="312" cy="220" r="24" fill="#664E27" />
+  
+  <!-- Thinking expression -->
+  <path d="M180 320 Q256 380 332 320" stroke="#664E27" stroke-width="20" fill="none" />
+  
+  <!-- Thinking bubble -->
+  <circle cx="400" cy="150" r="35" fill="#ffffff" />
+  <circle cx="440" cy="105" r="25" fill="#ffffff" />
+  <circle cx="465" cy="70" r="15" fill="#ffffff" />
+  
+  <!-- Question mark inside thinking bubble -->
+  <text x="400" y="165" font-family="Arial" font-size="50" font-weight="bold" text-anchor="middle" fill="#4f46e5">?</text>
+</svg> 

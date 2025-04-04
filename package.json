@@ -1,0 +1,40 @@
+{
+  "name": "emoji-guesser",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:check": "next lint",
+    "format:check": "prettier --check .",
+    "format": "prettier --write .",
+    "test": "echo 'No tests specified'",
+    "find:chonky-files": "npx ts-node scripts/code-slimmer.ts"
+  },
+  "dependencies": {
+    "@dappykit/sdk": "^3.0.1",
+    "@farcaster/frame-sdk": "^0.0.31",
+    "@farcaster/frame-wagmi-connector": "^0.0.19",
+    "@tanstack/react-query": "^5.71.1",
+    "next": "15.2.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "viem": "^2.24.2",
+    "wagmi": "^2.14.15"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.2.4",
+    "prettier": "^3.5.3",
+    "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
+  }
+}

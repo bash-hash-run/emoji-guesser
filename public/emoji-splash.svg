@@ -1,0 +1,24 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="200" height="200" fill="url(#bg)" />
+  
+  <!-- Emoji icon -->
+  <circle cx="100" cy="80" r="40" fill="#ffffff" opacity="0.25" />
+  
+  <!-- Emoji face -->
+  <circle cx="100" cy="80" r="30" fill="#FFDD67" />
+  <circle cx="87" cy="72" r="4" fill="#664E27" />
+  <circle cx="113" cy="72" r="4" fill="#664E27" />
+  <path d="M85 90 Q100 105 115 90" stroke="#664E27" stroke-width="3" fill="none" />
+  
+  <!-- Text -->
+  <text x="100" y="150" font-family="'Geist', sans-serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#ffffff">Emoji Guesser</text>
+</svg> 
