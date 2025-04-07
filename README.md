@@ -73,6 +73,15 @@ Emoji Guesser is built with modern web technologies:
 - Dark mode support with seamless transitions
 - Mobile-first design approach
 
+### Schema and Data Validation
+
+The project's `schema.json` follows the [Web4 Apps Specification](https://github.com/DappyKit/web4-apps-specification) standard, which is designed for decentralized AI-powered applications. This specification ensures:
+
+- Standardized data validation across the application
+- Consistent structure for emoji puzzles and user interactions
+- Type safety and input validation for all game features
+- Seamless integration with Web3 and AI capabilities
+
 ## Getting Started
 
 ### Playing Online
