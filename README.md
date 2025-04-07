@@ -2,7 +2,7 @@
 
 **Think you can decode emoji puzzles? Put your skills to the test!**
 
-![Emoji Guesser Game](https://placehold.co/600x400/indigo/white?text=Emoji+Guesser)
+![Emoji Guesser Game](/public/emoji-banner.svg)
 
 ## What is Emoji Guesser?
 
