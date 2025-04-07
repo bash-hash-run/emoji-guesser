@@ -10,8 +10,8 @@ Emoji Guesser is a brain-teasing game that challenges your emoji interpretation 
 
 Here's the deal:
 
-- We show you emoji combinations like 🐱 + 💻
-- You try to guess what they represent ("computer cat" or "laptop cat")
+- We show you emoji combinations like 🧍‍♂️ + 💻
+- You try to guess what they represent ("hacker" or "coder")
 - Earn points for correct answers
 - Use hints when you're stumped
 - But watch out! You have limited attempts
@@ -34,7 +34,6 @@ Here are some emoji puzzles you might encounter:
 | ----------- | ---------------- |
 | 🌞 + 🕶️     | sunglasses       |
 | 🍎 + 🥧     | applepie         |
-| 🏃‍♀️ + 🏠     | runhome          |
 | 🌊 + 🏄‍♂️     | surfing          |
 | 🎂 + 🎊🎉   | birthday         |
 
