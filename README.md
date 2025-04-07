@@ -18,6 +18,43 @@ Here's the deal:
 
 It's simple, addictive, and surprisingly challenging!
 
+## Prompts Examples
+
+Write **[10]** questions about **[popular movies about superheroes]** that have a one-word title. Price is **[1]**. Attempts are **[5]**. ETH wallet is **[0x]**. If the title contains non-letter symbols, exclude them. Each answer must be a single word. Each question should use 4 emojis as a hint. Title must be engaging, bright, and describe the whole set of questions; it can be multiple words. Include an engaging description. Emojis must describe the thing without revealing the answer directly.
+
+Examples:  
+🌞 🕶️       sunglasses  
+🍎 🥧       applepie  
+🌊 🏄‍♂️       surfing  
+🎂 🎊 🎉     birthday
+
+---
+Write **10** questions about **popular accessories** that have a one-word name. Price is **1**. Attempts are **5**. ETH wallet is **0x**. If the name contains non-letter symbols, exclude them. Each answer must be a single word. Each question should use **2 emojis** as a hint. Title must be engaging, bright, and describe the whole set of questions; it can be multiple words. Include an engaging description. Emojis must describe the accessory without revealing the answer directly.
+
+Examples:  
+🕶️ 🌞       sunglasses  
+👜 👛       handbag  
+⌚ 📱       smartwatch
+
+---
+Write **10** questions about **popular desserts** that have a one-word name. Price is **1**. Attempts are **5**. ETH wallet is **0x**. If the name contains non-letter symbols, exclude them. Each answer must be a single word. Each question should use **2 emojis** as a hint. Title must be engaging, bright, and describe the whole set of questions; it can be multiple words. Include an engaging description. Emojis must hint at the dessert without directly revealing the answer.
+
+Examples:  
+🌰 🍫       brownie
+🥕 🍰       cheesecake
+🍋 🍮       tart
+🥥 🍨       sorbet
+
+---
+Write **10** questions about **popular YouTubers** that have a one-word channel name. Price is **1**. Attempts are **5**. ETH wallet is **0x**. If the name contains non-letter symbols, exclude them. Each answer must be a single word. Each question should use **3 emojis** as a hint. Title must be engaging, bright, and describe the whole set of questions; it can be multiple words. Include an engaging description. Emojis must hint at the YouTuber or their content without directly revealing the answer.
+
+Examples:  
+🎮 🎧 😂       pewdiepie  
+🧪 🧠 📊       vsauce  
+🎭 🎨 💭       dream  
+📸 ✈️ 💰       mrbeast
+
+
 ## Why Play Emoji Guesser?
 
 - **Train Your Brain**: Enhance your lateral thinking and creative interpretation skills
@@ -86,8 +123,6 @@ The project's `schema.json` follows the [Web4 Apps Specification](https://github
 
 ### Playing Online
 
-Simply visit [emoji-guesser.example.com](https://emoji-guesser.example.com) to start playing immediately!
-
 ### Development Setup
 
 Want to run your own instance or contribute?
@@ -95,7 +130,7 @@ Want to run your own instance or contribute?
 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/emoji-guesser.git
+git clone https://github.com/bash-hash-run/emoji-guesser.git
 cd emoji-guesser
 ```
 
@@ -145,12 +180,6 @@ Contributions are welcome! Feel free to:
 - Improve the UI/UX
 - Fix bugs or optimize performance
 - Add new features
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-## License
-
-MIT - See [LICENSE](LICENSE) for details.
 
 ## Future Plans
 
