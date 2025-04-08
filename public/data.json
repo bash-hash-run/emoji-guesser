@@ -2,8 +2,8 @@
   "title": "Emoji Guesser",
   "description": "Can you guess what these emojis represent?",
   "attempts_per_game": 5,
-  "price_for_10_attempts": 0.5,
-  "eth_wallet_owner": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+  "price_for_10_attempts": 0.01,
+  "eth_wallet_owner": "0x2Ab9C5DeBCb277D3177A8C8Ad1d1d2c4adC08076",
   "guesses": [
     {
       "emojis": "🌞🕶️",
