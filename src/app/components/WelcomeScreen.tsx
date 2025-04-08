@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { EmojiGuesserData, ThemeConfig } from "../types";
 import { useFarcaster } from "./FarcasterProvider";
 import Image from "next/image";
 import { PlayIcon } from "./icons";
+import PreviousPlaysModal from "./modals/PreviousPlaysModal";
 
 interface WelcomeScreenProps {
   gameData?: EmojiGuesserData;
@@ -18,12 +19,13 @@ export default function WelcomeScreen({
   onStart,
 }: WelcomeScreenProps) {
   const { context, loading } = useFarcaster();
+  const [showPreviousPlays, setShowPreviousPlays] = useState(false);
 
   /**
-   * Handles checking user's games history and logs to console
+   * Handles opening the previous plays modal
    */
   const handleCheckGames = () => {
-    console.log("Checking my games history...");
+    setShowPreviousPlays(true);
   };
 
   return (
@@ -184,6 +186,12 @@ export default function WelcomeScreen({
           </div>
         </div>
       </div>
+
+      {/* Previous Plays Modal */}
+      <PreviousPlaysModal
+        isOpen={showPreviousPlays}
+        onCloseAction={() => setShowPreviousPlays(false)}
+      />
     </div>
   );
 }

@@ -1,6 +1,10 @@
+"use client";
+
 import React, { useState } from "react";
 import { EmojiGuesserData, GameState, ThemeConfig } from "../types";
 import { useFarcaster } from "./FarcasterProvider";
+import { useDappyKit } from "../utils/dappykit-context";
+import { saveGameResult, NoSdkError } from "../utils/game-history";
 import AnswersModal from "./modals/AnswersModal";
 import PurchaseAttemptsModal from "./modals/PurchaseAttemptsModal";
 import {
@@ -12,6 +16,7 @@ import {
 } from "./icons";
 import { generateShareIntent, getAppUrl } from "../utils/farcaster";
 import { useAccount } from "wagmi";
+import { SpinnerIcon } from "./icons/SpinnerIcon";
 
 interface ResultsScreenProps {
   gameData?: EmojiGuesserData;
@@ -31,12 +36,16 @@ export default function ResultsScreen({
   onRestart,
   onAddAttempts,
 }: ResultsScreenProps) {
-  const { sdk } = useFarcaster();
-  const { isConnected } = useAccount();
+  const { sdk: farcasterSdk } = useFarcaster();
+  const { sdk: dappyKitSdk, isInitialized } = useDappyKit();
+  const { address, isConnected } = useAccount();
   const [showAnswersModal, setShowAnswersModal] = useState(false);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [transactionError, setTransactionError] = useState<string | null>(null);
   const [transactionSuccess, setTransactionSuccess] = useState(false);
+  const [savingProgress, setSavingProgress] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Calculate percentage score
   const scorePercentage =
@@ -96,8 +105,8 @@ export default function ResultsScreen({
       const intentUrl = generateShareIntent(shareText, appUrl);
 
       // Try to use Farcaster SDK if available
-      if (sdk?.actions?.openUrl) {
-        await sdk.actions.openUrl(intentUrl);
+      if (farcasterSdk?.actions?.openUrl) {
+        await farcasterSdk.actions.openUrl(intentUrl);
       } else {
         // Open the URL directly as fallback
         window.open(intentUrl, "_blank", "noopener,noreferrer");
@@ -150,13 +159,55 @@ export default function ResultsScreen({
   };
 
   /**
-   * Handles saving the game progress to storage
+   * Handles saving the game progress to DappyKit
    */
-  const handleSaveProgress = () => {
-    console.log("Saving game progress...", {
-      score: gameState?.score,
-      percentage: scorePercentage,
-    });
+  const handleSaveProgress = async () => {
+    if (!gameState || !gameData || !isInitialized) return;
+
+    if (!address) {
+      setSaveError("Please connect your wallet to save progress");
+      return;
+    }
+
+    setSavingProgress(true);
+    setSaveSuccess(false);
+    setSaveError(null);
+
+    try {
+      // Prepare game result data
+      const gameResult = {
+        timestamp: Date.now(),
+        score: gameState.score,
+        totalAttempts: gameData.attempts_per_game,
+        attemptsUsed:
+          gameData.attempts_per_game - (gameState.attemptsRemaining || 0),
+        title: gameData.title,
+        gameId: gameData.id,
+      };
+
+      // Save to DappyKit - the function now throws errors instead of returning boolean
+      await saveGameResult(dappyKitSdk, address as string, gameResult);
+
+      // If we get here, it means save was successful
+      setSaveSuccess(true);
+
+      // Reset the success message after a delay
+      setTimeout(() => {
+        setSaveSuccess(false);
+      }, 3000);
+    } catch (error) {
+      console.error("Error saving game progress:", error);
+
+      if (error instanceof NoSdkError) {
+        setSaveError("DappyKit SDK not initialized");
+      } else {
+        setSaveError(
+          error instanceof Error ? error.message : "An unknown error occurred",
+        );
+      }
+    } finally {
+      setSavingProgress(false);
+    }
   };
 
   return (
@@ -191,10 +242,44 @@ export default function ResultsScreen({
             {/* Save Progress button */}
             <button
               onClick={handleSaveProgress}
-              className="mt-3 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium rounded-lg hover:from-emerald-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 shadow-lg transition-all transform hover:scale-105 w-full sm:w-auto"
+              disabled={savingProgress || !isInitialized}
+              className={`mt-3 px-6 py-3 ${
+                saveSuccess
+                  ? "bg-gradient-to-r from-green-500 to-emerald-500"
+                  : saveError
+                    ? "bg-gradient-to-r from-red-500 to-orange-500"
+                    : "bg-gradient-to-r from-emerald-500 to-teal-500"
+              } text-white font-medium rounded-lg hover:from-emerald-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 shadow-lg transition-all transform hover:scale-105 w-full sm:w-auto disabled:opacity-70`}
             >
-              <SaveIcon className="h-5 w-5 mr-2 inline" />
-              Save Progress
+              {savingProgress ? (
+                <>
+                  <div className="flex items-center justify-center w-full space-x-2">
+                    <SpinnerIcon className="h-5 w-5 text-white" />
+                    <span>Saving...</span>
+                  </div>
+                </>
+              ) : saveSuccess ? (
+                <>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-2 inline"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Saved!
+                </>
+              ) : (
+                <>
+                  <SaveIcon className="h-5 w-5 mr-2 inline" />
+                  {saveError ? "Save Failed" : "Save Progress"}
+                </>
+              )}
             </button>
           </div>
         </div>

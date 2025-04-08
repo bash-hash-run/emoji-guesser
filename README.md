@@ -23,37 +23,39 @@ It's simple, addictive, and surprisingly challenging!
 Write **[10]** questions about **[popular movies about superheroes]** that have a one-word title. Price is **[1]**. Attempts are **[5]**. ETH wallet is **[0x]**. If the title contains non-letter symbols, exclude them. Each answer must be a single word. Each question should use 4 emojis as a hint. Title must be engaging, bright, and describe the whole set of questions; it can be multiple words. Include an engaging description. Emojis must describe the thing without revealing the answer directly.
 
 Examples:  
-🌞 🕶️       sunglasses  
-🍎 🥧       applepie  
-🌊 🏄‍♂️       surfing  
-🎂 🎊 🎉     birthday
+🌞 🕶️ sunglasses  
+🍎 🥧 applepie  
+🌊 🏄‍♂️ surfing  
+🎂 🎊 🎉 birthday
 
 ---
+
 Write **10** questions about **popular accessories** that have a one-word name. Price is **1**. Attempts are **5**. ETH wallet is **0x**. If the name contains non-letter symbols, exclude them. Each answer must be a single word. Each question should use **2 emojis** as a hint. Title must be engaging, bright, and describe the whole set of questions; it can be multiple words. Include an engaging description. Emojis must describe the accessory without revealing the answer directly.
 
 Examples:  
-🕶️ 🌞       sunglasses  
-👜 👛       handbag  
-⌚ 📱       smartwatch
+🕶️ 🌞 sunglasses  
+👜 👛 handbag  
+⌚ 📱 smartwatch
 
 ---
+
 Write **10** questions about **popular desserts** that have a one-word name. Price is **1**. Attempts are **5**. ETH wallet is **0x**. If the name contains non-letter symbols, exclude them. Each answer must be a single word. Each question should use **2 emojis** as a hint. Title must be engaging, bright, and describe the whole set of questions; it can be multiple words. Include an engaging description. Emojis must hint at the dessert without directly revealing the answer.
 
 Examples:  
-🌰 🍫       brownie
-🥕 🍰       cheesecake
-🍋 🍮       tart
-🥥 🍨       sorbet
+🌰 🍫 brownie
+🥕 🍰 cheesecake
+🍋 🍮 tart
+🥥 🍨 sorbet
 
 ---
+
 Write **10** questions about **popular YouTubers** that have a one-word channel name. Price is **1**. Attempts are **5**. ETH wallet is **0x**. If the name contains non-letter symbols, exclude them. Each answer must be a single word. Each question should use **3 emojis** as a hint. Title must be engaging, bright, and describe the whole set of questions; it can be multiple words. Include an engaging description. Emojis must hint at the YouTuber or their content without directly revealing the answer.
 
 Examples:  
-🎮 🎧 😂       pewdiepie  
-🧪 🧠 📊       vsauce  
-🎭 🎨 💭       dream  
-📸 ✈️ 💰       mrbeast
-
+🎮 🎧 😂 pewdiepie  
+🧪 🧠 📊 vsauce  
+🎭 🎨 💭 dream  
+📸 ✈️ 💰 mrbeast
 
 ## Why Play Emoji Guesser?
 
@@ -188,6 +190,67 @@ Contributions are welcome! Feel free to:
 - Timed challenges for extra difficulty
 - Achievement system for puzzle masters
 - More integration with web3 ecosystems
+
+## Data Storage with DappyKit and IPFS
+
+Emoji Guesser uses a combination of DappyKit and IPFS for permanent and decentralized data storage:
+
+### How It Works
+
+1. **DappyKit SDK Integration**
+
+   - User game history is stored using DappyKit's file system changes API
+   - The app creates a smart account for each user with their wallet
+   - This allows data ownership to remain with the user, not the application
+
+2. **IPFS Storage**
+
+   - Game results and history are uploaded to IPFS via Pinata
+   - A Content Identifier (CID) is generated for each upload
+   - This CID is stored on-chain through DappyKit
+   - Data remains accessible even if the app is no longer maintained
+
+3. **Fault Tolerance**
+   - The system includes a fallback mechanism if IPFS upload fails
+   - Data can still be stored directly in DappyKit's multihash format
+
+### Setting Up IPFS Storage
+
+1. Get your Pinata API keys from [https://app.pinata.cloud/developers/keys](https://app.pinata.cloud/developers/keys)
+2. Add the API keys to your `.env.local` file (you can use either JWT or API key + Secret):
+
+   ```
+   # Using JWT (recommended)
+   NEXT_PUBLIC_PINATA_JWT="your_pinata_jwt_token_here"
+
+   # OR using API key + Secret combination
+   NEXT_PUBLIC_PINATA_API_KEY="your_pinata_api_key_here"
+   NEXT_PUBLIC_PINATA_API_SECRET="your_pinata_api_secret_here"
+   ```
+
+3. The app will automatically use Pinata for permanent storage
+
+### Testing IPFS Integration
+
+You can test the IPFS integration with the included test script:
+
+```bash
+npm run test:ipfs
+```
+
+This script:
+
+1. Uploads random data to IPFS via Pinata
+2. Retrieves the data using the returned CID
+3. Verifies that the retrieved data matches the original
+
+### Data Persistence
+
+- Data stored this way is permanent and tied to the user's wallet address
+- Users maintain full ownership of their game history
+- The app provides seamless UI for users to view their previous plays
+
+This architecture follows Web3 principles by ensuring user data ownership while providing a Web2-like user experience.
 
 ---
 

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { FarcasterProvider } from "./components/FarcasterProvider";
 import { WagmiProvider } from "./components/WagmiProvider";
+import { DappyKitProvider } from "./utils/dappykit-context";
 import { metadata } from "./metadata";
 import Footer from "./components/Footer";
 
@@ -82,8 +83,10 @@ export default function RootLayout({
         <div className="relative z-10">
           <WagmiProvider>
             <FarcasterProvider>
-              {children}
-              <Footer />
+              <DappyKitProvider>
+                {children}
+                <Footer />
+              </DappyKitProvider>
             </FarcasterProvider>
           </WagmiProvider>
         </div>

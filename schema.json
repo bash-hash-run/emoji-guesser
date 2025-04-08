@@ -65,6 +65,13 @@
       }
     }
   },
-  "required": ["title", "description", "attempts_per_game", "price_for_10_attempts", "eth_wallet_owner", "guesses"],
+  "required": [
+    "title",
+    "description",
+    "attempts_per_game",
+    "price_for_10_attempts",
+    "eth_wallet_owner",
+    "guesses"
+  ],
   "additionalProperties": false
 }
