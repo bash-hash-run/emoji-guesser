@@ -11,50 +11,8 @@
  * Run with: npm run test:cid
  */
 
-import { CID } from "multiformats/cid";
-import { base16 } from "multiformats/bases/base16";
-import { base32 } from "multiformats/bases/base32";
-import * as raw from "multiformats/codecs/raw";
-import { sha256 } from "multiformats/hashes/sha2";
-import { create } from "multiformats/hashes/digest";
-
-/**
- * Extracts the digest from a CID and converts it to a hex string
- * @param cidString - The CID string to convert
- * @returns The hex digest without 0x prefix
- */
-function extractDigestFromCID(cidString: string): string {
-  // Parse the CID string
-  const cid = CID.parse(cidString);
-
-  // Get the multihash digest bytes
-  const bytes = cid.multihash.digest;
-
-  // Convert bytes to uppercase hex string
-  return base16.encode(bytes).slice(1).toUpperCase(); // Remove the 'f' prefix from base16 encoding
-}
-
-/**
- * Converts a hex digest to a CID string in base32 format
- * @param hexDigest - The hex digest string to convert (without 0x prefix)
- * @returns The CID string in base32 format
- */
-function convertHexToCID(hexDigest: string): string {
-  // Normalize hex string to lowercase
-  const normalizedHex = hexDigest.toLowerCase();
-
-  // Convert hex string to bytes
-  const digestBytes = base16.decode(`f${normalizedHex}`); // Add 'f' prefix for base16 decoding
-
-  // Create a multihash digest object directly from the digest bytes
-  const digest = create(sha256.code, digestBytes);
-
-  // Create a CID from the multihash digest
-  const cid = CID.create(1, raw.code, digest);
-
-  // Return the CID as a base32 string
-  return cid.toString();
-}
+// Import our custom CID helper instead of multiformats
+import { cidToHex, hexToCID } from "../src/lib/cid-helper";
 
 /**
  * Main test function
@@ -72,7 +30,7 @@ async function runTest(): Promise<void> {
   try {
     // Test 1: CID to Hex conversion
     console.log("\n=== Testing CID to Hex conversion ===");
-    const hexDigest = extractDigestFromCID(testCID);
+    const hexDigest = cidToHex(testCID);
 
     console.log(`Input CID: ${testCID}`);
     console.log(`Extracted digest (hex): ${hexDigest}`);
@@ -90,7 +48,7 @@ async function runTest(): Promise<void> {
 
     // Test 2: Hex to CID conversion
     console.log("\n=== Testing Hex to CID conversion ===");
-    const generatedCID = convertHexToCID(expectedHexDigest);
+    const generatedCID = hexToCID(expectedHexDigest);
 
     console.log(`Input hex digest: ${expectedHexDigest}`);
     console.log(`Generated CID: ${generatedCID}`);
