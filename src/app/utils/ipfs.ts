@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * IPFS utility functions for storing and retrieving data using Pinata
+ * IPFS utility functions for storing and retrieving data using backend API
  */
 
 // Error classes for IPFS operations
@@ -19,98 +19,46 @@ export class IpfsUploadError extends Error {
   }
 }
 
-export class PinataCredentialsError extends Error {
-  constructor() {
-    super(
-      "Pinata credentials are required. Please provide either JWT token or API key and secret.",
-    );
-    this.name = "PinataCredentialsError";
-  }
-}
-
 /**
- * Uploads data to IPFS using Pinata
+ * Uploads data to IPFS using the backend API
  * @param data - JSON data to upload
  * @returns CID hash and size of the uploaded content
  * @throws {IpfsUploadError} If upload fails
- * @throws {PinataCredentialsError} If Pinata credentials are missing
  */
 export const uploadToIpfs = async (
   data: unknown,
 ): Promise<{ cid: string; size: number }> => {
   try {
-    const apiKey = process.env.NEXT_PUBLIC_PINATA_API_KEY;
-    const apiSecret = process.env.NEXT_PUBLIC_PINATA_API_SECRET;
-    const jwtToken = process.env.NEXT_PUBLIC_PINATA_JWT;
-
-    // Check if credentials are available
-    if (!((apiKey && apiSecret) || jwtToken)) {
-      throw new PinataCredentialsError();
-    }
-
     // Convert data to JSON string if it's not already a string
     const jsonData = typeof data === "string" ? data : JSON.stringify(data);
-    const blob = new Blob([jsonData], { type: "application/json" });
 
-    // Create a unique name for the file based on timestamp
-    const fileName = `emoji-guesser-data-${Date.now()}.json`;
-
-    // Create headers for authentication
-    const headers: HeadersInit = {};
-
-    if (jwtToken) {
-      headers.Authorization = `Bearer ${jwtToken}`;
-    } else if (apiKey && apiSecret) {
-      headers["pinata_api_key"] = apiKey;
-      headers["pinata_secret_api_key"] = apiSecret;
-    }
-
-    // Create form data - DO NOT set Content-Type header when using FormData
-    // The browser will automatically set it with the correct boundary
-    const formData = new FormData();
-    formData.append("file", blob, fileName);
-
-    // Add metadata to identify the upload
-    const pinataMetadata = JSON.stringify({
-      name: fileName,
-      keyvalues: {
-        app: "emoji-guesser",
-        timestamp: Date.now().toString(),
+    const response = await fetch("/api/ipfs/upload", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
+      body: jsonData,
     });
-    formData.append("pinataMetadata", pinataMetadata);
-
-    // Set pinata options
-    const pinataOptions = JSON.stringify({
-      cidVersion: 1,
-    });
-    formData.append("pinataOptions", pinataOptions);
-
-    const response = await fetch(
-      "https://api.pinata.cloud/pinning/pinFileToIPFS",
-      {
-        method: "POST",
-        headers,
-        body: formData,
-      },
-    );
 
     if (!response.ok) {
-      throw new Error(`Pinata upload failed: ${response.statusText}`);
+      const errorData = await response.json();
+      throw new Error(
+        errorData.error || `Upload failed: ${response.statusText}`,
+      );
     }
 
     const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || "Upload failed");
+    }
+
     return {
-      cid: result.IpfsHash,
-      size: blob.size,
+      cid: result.cid,
+      size: result.size,
     };
   } catch (error) {
     console.error("Error uploading to IPFS:", error);
-
-    if (error instanceof PinataCredentialsError) {
-      throw error;
-    }
-
     throw new IpfsUploadError(
       error instanceof Error ? error.message : "Unknown upload error",
     );
@@ -118,27 +66,32 @@ export const uploadToIpfs = async (
 };
 
 /**
- * Fetches data from IPFS using a CID through Pinata gateway
+ * Fetches data from IPFS using a CID through the backend API
  * @param cid - The IPFS Content Identifier
  * @returns The data fetched from IPFS
  * @throws {IpfsRetrievalError} If retrieval fails
  */
 export const fetchFromIpfs = async <T>(cid: string): Promise<T> => {
   try {
-    const pinataGateway = "https://gateway.pinata.cloud/ipfs/";
-
     // Remove 0x prefix if present
     const cleanCid = cid.startsWith("0x") ? cid.slice(2) : cid;
 
-    const response = await fetch(`${pinataGateway}${cleanCid}`);
+    const response = await fetch(`/api/ipfs/fetch/${cleanCid}`);
 
     if (!response.ok) {
+      const errorData = await response.json();
       throw new Error(
-        `Failed to fetch from Pinata gateway: ${response.statusText}`,
+        errorData.error || `Fetch failed: ${response.statusText}`,
       );
     }
 
-    return (await response.json()) as T;
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || "Fetch failed");
+    }
+
+    return result.data as T;
   } catch (error) {
     console.error("Error fetching from IPFS:", error);
     throw new IpfsRetrievalError(
