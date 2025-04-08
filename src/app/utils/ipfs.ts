@@ -19,11 +19,21 @@ export class IpfsUploadError extends Error {
   }
 }
 
+export class PinataCredentialsError extends Error {
+  constructor() {
+    super(
+      "Pinata credentials are required. Please provide either JWT token or API key and secret.",
+    );
+    this.name = "PinataCredentialsError";
+  }
+}
+
 /**
  * Uploads data to IPFS using Pinata
  * @param data - JSON data to upload
  * @returns CID hash and size of the uploaded content
  * @throws {IpfsUploadError} If upload fails
+ * @throws {PinataCredentialsError} If Pinata credentials are missing
  */
 export const uploadToIpfs = async (
   data: unknown,
@@ -33,6 +43,11 @@ export const uploadToIpfs = async (
     const apiSecret = process.env.NEXT_PUBLIC_PINATA_API_SECRET;
     const jwtToken = process.env.NEXT_PUBLIC_PINATA_JWT;
 
+    // Check if credentials are available
+    if (!((apiKey && apiSecret) || jwtToken)) {
+      throw new PinataCredentialsError();
+    }
+
     // Convert data to JSON string if it's not already a string
     const jsonData = typeof data === "string" ? data : JSON.stringify(data);
     const blob = new Blob([jsonData], { type: "application/json" });
@@ -40,80 +55,62 @@ export const uploadToIpfs = async (
     // Create a unique name for the file based on timestamp
     const fileName = `emoji-guesser-data-${Date.now()}.json`;
 
-    // If we have Pinata credentials, use their API
-    if ((apiKey && apiSecret) || jwtToken) {
-      // Create headers for authentication
-      const headers: HeadersInit = {};
+    // Create headers for authentication
+    const headers: HeadersInit = {};
 
-      if (jwtToken) {
-        headers.Authorization = `Bearer ${jwtToken}`;
-      } else if (apiKey && apiSecret) {
-        headers["pinata_api_key"] = apiKey;
-        headers["pinata_secret_api_key"] = apiSecret;
-      }
-
-      // Create form data - DO NOT set Content-Type header when using FormData
-      // The browser will automatically set it with the correct boundary
-      const formData = new FormData();
-      formData.append("file", blob, fileName);
-
-      // Add metadata to identify the upload
-      const pinataMetadata = JSON.stringify({
-        name: fileName,
-        keyvalues: {
-          app: "emoji-guesser",
-          timestamp: Date.now().toString(),
-        },
-      });
-      formData.append("pinataMetadata", pinataMetadata);
-
-      // Set pinata options
-      const pinataOptions = JSON.stringify({
-        cidVersion: 1,
-      });
-      formData.append("pinataOptions", pinataOptions);
-
-      const response = await fetch(
-        "https://api.pinata.cloud/pinning/pinFileToIPFS",
-        {
-          method: "POST",
-          headers,
-          body: formData,
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(`Pinata upload failed: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      return {
-        cid: result.IpfsHash,
-        size: blob.size,
-      };
+    if (jwtToken) {
+      headers.Authorization = `Bearer ${jwtToken}`;
+    } else if (apiKey && apiSecret) {
+      headers["pinata_api_key"] = apiKey;
+      headers["pinata_secret_api_key"] = apiSecret;
     }
 
-    // Fallback to public IPFS gateway if no API keys available
-    console.warn("No Pinata API keys found, using fallback IPFS gateway");
+    // Create form data - DO NOT set Content-Type header when using FormData
+    // The browser will automatically set it with the correct boundary
     const formData = new FormData();
-    formData.append("file", blob);
+    formData.append("file", blob, fileName);
 
-    const response = await fetch("https://ipfs.infura.io:5001/api/v0/add", {
-      method: "POST",
-      body: formData,
+    // Add metadata to identify the upload
+    const pinataMetadata = JSON.stringify({
+      name: fileName,
+      keyvalues: {
+        app: "emoji-guesser",
+        timestamp: Date.now().toString(),
+      },
     });
+    formData.append("pinataMetadata", pinataMetadata);
+
+    // Set pinata options
+    const pinataOptions = JSON.stringify({
+      cidVersion: 1,
+    });
+    formData.append("pinataOptions", pinataOptions);
+
+    const response = await fetch(
+      "https://api.pinata.cloud/pinning/pinFileToIPFS",
+      {
+        method: "POST",
+        headers,
+        body: formData,
+      },
+    );
 
     if (!response.ok) {
-      throw new Error(`Infura IPFS upload failed: ${response.statusText}`);
+      throw new Error(`Pinata upload failed: ${response.statusText}`);
     }
 
     const result = await response.json();
     return {
-      cid: result.Hash,
-      size: result.Size,
+      cid: result.IpfsHash,
+      size: blob.size,
     };
   } catch (error) {
     console.error("Error uploading to IPFS:", error);
+
+    if (error instanceof PinataCredentialsError) {
+      throw error;
+    }
+
     throw new IpfsUploadError(
       error instanceof Error ? error.message : "Unknown upload error",
     );
@@ -121,42 +118,27 @@ export const uploadToIpfs = async (
 };
 
 /**
- * Fetches data from IPFS using a CID
+ * Fetches data from IPFS using a CID through Pinata gateway
  * @param cid - The IPFS Content Identifier
  * @returns The data fetched from IPFS
  * @throws {IpfsRetrievalError} If retrieval fails
  */
 export const fetchFromIpfs = async <T>(cid: string): Promise<T> => {
   try {
-    // List of public IPFS gateways to try, including Pinata's gateway
-    const ipfsGateways = [
-      "https://gateway.pinata.cloud/ipfs/",
-      "https://ipfs.io/ipfs/",
-      "https://cloudflare-ipfs.com/ipfs/",
-      "https://ipfs.infura.io/ipfs/",
-    ];
+    const pinataGateway = "https://gateway.pinata.cloud/ipfs/";
 
     // Remove 0x prefix if present
     const cleanCid = cid.startsWith("0x") ? cid.slice(2) : cid;
 
-    // Try each gateway until one works
-    let lastError: Error | null = null;
+    const response = await fetch(`${pinataGateway}${cleanCid}`);
 
-    for (const gateway of ipfsGateways) {
-      try {
-        const response = await fetch(`${gateway}${cleanCid}`);
-
-        if (response.ok) {
-          return (await response.json()) as T;
-        }
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-        // Continue to next gateway
-      }
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch from Pinata gateway: ${response.statusText}`,
+      );
     }
 
-    // If we get here, all gateways failed
-    throw lastError || new Error("All IPFS gateways failed");
+    return (await response.json()) as T;
   } catch (error) {
     console.error("Error fetching from IPFS:", error);
     throw new IpfsRetrievalError(

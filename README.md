@@ -18,6 +18,19 @@ Here's the deal:
 
 It's simple, addictive, and surprisingly challenging!
 
+## Try It Online
+
+**[Play Emoji Guesser now at emoji-guesser.vercel.app](https://emoji-guesser.vercel.app/)**
+
+The live demo features:
+
+- Full game experience with emoji puzzles
+- Mobile-friendly responsive design
+- Web3 wallet integration
+- IPFS data storage via Pinata
+
+No installation needed - just visit the URL and start playing!
+
 ## Prompts Examples
 
 Write **[10]** questions about **[popular movies about superheroes]** that have a one-word title. Price is **[1]**. Attempts are **[5]**. ETH wallet is **[0x]**. If the title contains non-letter symbols, exclude them. Each answer must be a single word. Each question should use 4 emojis as a hint. Title must be engaging, bright, and describe the whole set of questions; it can be multiple words. Include an engaging description. Emojis must describe the thing without revealing the answer directly.
