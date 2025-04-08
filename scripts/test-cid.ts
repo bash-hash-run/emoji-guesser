@@ -15,21 +15,23 @@
 import { cidToHex, hexToCID } from "../src/lib/cid-helper";
 
 /**
- * Main test function
+ * Run a single test case for CID conversion
+ * @param testCID - CID to test
+ * @param expectedHexDigest - Expected hex digest
+ * @param testNumber - Test case number
+ * @returns True if tests passed, false otherwise
  */
-async function runTest(): Promise<void> {
-  console.log("Starting CID conversion tests...");
-
-  // The CID to test - this is the complete CID from the user
-  const testCID = "bafkreihi4lerppiospxyaowqhsw5gikcx45ycgpunn52kz7jz4qdw2g2ty";
-
-  // Expected output (from the image)
-  const expectedHexDigest =
-    "E8E2C917BD0E93EF803AD03CADD32142BF3B8119F46B7BA567E9CF203B68DA9E";
+async function runTestCase(
+  testCID: string,
+  expectedHexDigest: string,
+  testNumber: number,
+): Promise<boolean> {
+  console.log(`\n=== Test Case ${testNumber} ===`);
+  let success = true;
 
   try {
-    // Test 1: CID to Hex conversion
-    console.log("\n=== Testing CID to Hex conversion ===");
+    // Test CID to Hex conversion
+    console.log(`=== Testing CID to Hex conversion ===`);
     const hexDigest = cidToHex(testCID);
 
     console.log(`Input CID: ${testCID}`);
@@ -44,10 +46,11 @@ async function runTest(): Promise<void> {
       console.error(
         `Difference: Expected ${expectedHexDigest}, got ${hexDigest}`,
       );
+      success = false;
     }
 
-    // Test 2: Hex to CID conversion
-    console.log("\n=== Testing Hex to CID conversion ===");
+    // Test Hex to CID conversion
+    console.log(`\n=== Testing Hex to CID conversion ===`);
     const generatedCID = hexToCID(expectedHexDigest);
 
     console.log(`Input hex digest: ${expectedHexDigest}`);
@@ -62,9 +65,60 @@ async function runTest(): Promise<void> {
         "❌ TEST FAILED: Generated CID does not match expected value!",
       );
       console.error(`Difference: Expected ${testCID}, got ${generatedCID}`);
+      success = false;
+    }
+
+    return success;
+  } catch (error) {
+    console.error(`Error during test case ${testNumber}:`, error);
+    return false;
+  }
+}
+
+/**
+ * Main test function
+ */
+async function runTest(): Promise<void> {
+  console.log("Starting CID conversion tests...");
+
+  // Define test cases
+  const testCases = [
+    {
+      cid: "bafkreihi4lerppiospxyaowqhsw5gikcx45ycgpunn52kz7jz4qdw2g2ty",
+      hex: "E8E2C917BD0E93EF803AD03CADD32142BF3B8119F46B7BA567E9CF203B68DA9E",
+      description: "Original test case",
+    },
+    {
+      cid: "bafkreidxsjc7anyqhq3wfuynwj4vlkdktdeztsitk6ethtxkbbdcqids4u",
+      hex: "779245F037103C3762D30DB27955A86A98C999C913578933CEEA0846282072E5",
+      description: "Additional test case",
+    },
+  ];
+
+  try {
+    let allTestsPassed = true;
+
+    // Run each test case
+    for (let i = 0; i < testCases.length; i++) {
+      const { cid, hex, description } = testCases[i];
+      console.log(`\nRunning test case ${i + 1}: ${description}`);
+
+      const testPassed = await runTestCase(cid, hex, i + 1);
+      if (!testPassed) {
+        allTestsPassed = false;
+      }
+    }
+
+    // Final summary
+    console.log("\n=== Test Summary ===");
+    if (allTestsPassed) {
+      console.log("✅ ALL TESTS PASSED!");
+    } else {
+      console.error("❌ SOME TESTS FAILED!");
+      process.exit(1);
     }
   } catch (error) {
-    console.error("Error during CID conversion:", error);
+    console.error("Error during tests:", error);
     process.exit(1);
   }
 }

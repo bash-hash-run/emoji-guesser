@@ -1,6 +1,6 @@
 import { useWriteContract, useAccount } from "wagmi";
 import { createWalletClient, custom } from "viem";
-import { mainnet } from "viem/chains";
+import { base } from "viem/chains";
 
 /**
  * Multihash structure for file hashes
@@ -67,7 +67,7 @@ export const setUserChangeNonHook = async (
   }
 
   const walletClient = createWalletClient({
-    chain: mainnet,
+    chain: base,
     transport: custom(window.ethereum),
   });
 

@@ -206,7 +206,7 @@ Contributions are welcome! Feel free to:
 
 ## Data Storage with DappyKit and IPFS
 
-Emoji Guesser uses a combination of DappyKit and IPFS for permanent and decentralized data storage:
+Emoji Guesser uses a combination of DappyKit and IPFS for permanent and decentralized data storage, with results stored on Base Chain mainnet:
 
 ### How It Works
 
@@ -214,18 +214,20 @@ Emoji Guesser uses a combination of DappyKit and IPFS for permanent and decentra
 
    - User game history is stored using DappyKit's file system changes API
    - The app creates a smart account for each user with their wallet
+   - Game results are saved on-chain via Base Chain mainnet
    - This allows data ownership to remain with the user, not the application
 
 2. **IPFS Storage**
 
    - Game results and history are uploaded to IPFS via Pinata
    - A Content Identifier (CID) is generated for each upload
-   - This CID is stored on-chain through DappyKit
+   - The CID is converted to a hex digest and stored on Base Chain mainnet through DappyKit
+   - This ensures your game achievements remain permanently accessible
    - Data remains accessible even if the app is no longer maintained
 
 3. **Fault Tolerance**
    - The system includes a fallback mechanism if IPFS upload fails
-   - Data can still be stored directly in DappyKit's multihash format
+   - Data can still be stored directly in DappyKit's multihash format on Base Chain
 
 ### Setting Up IPFS Storage
 
@@ -241,29 +243,31 @@ Emoji Guesser uses a combination of DappyKit and IPFS for permanent and decentra
    NEXT_PUBLIC_PINATA_API_SECRET="your_pinata_api_secret_here"
    ```
 
-3. The app will automatically use Pinata for permanent storage
+3. The app will automatically use Pinata for permanent storage and Base Chain for on-chain persistence
 
 ### Testing IPFS Integration
 
-You can test the IPFS integration with the included test script:
+You can test the IPFS and Base Chain integration with the included test scripts:
 
 ```bash
 npm run test:ipfs
+npm run test:cid
 ```
 
-This script:
+These scripts:
 
-1. Uploads random data to IPFS via Pinata
-2. Retrieves the data using the returned CID
-3. Verifies that the retrieved data matches the original
+1. Upload test data to IPFS via Pinata
+2. Convert CIDs to hex digests (and back) for Base Chain storage
+3. Verify that retrieved data matches the original
 
 ### Data Persistence
 
-- Data stored this way is permanent and tied to the user's wallet address
-- Users maintain full ownership of their game history
+- Data stored this way is permanent on Base Chain mainnet and tied to the user's wallet address
+- The hex digest format ensures efficient and reliable storage on-chain
+- Users maintain full ownership of their game history through their crypto wallet
 - The app provides seamless UI for users to view their previous plays
 
-This architecture follows Web3 principles by ensuring user data ownership while providing a Web2-like user experience.
+This architecture follows Web3 principles by ensuring user data ownership on Base Chain while providing a Web2-like user experience.
 
 ---
 

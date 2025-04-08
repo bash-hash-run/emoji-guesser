@@ -4,6 +4,7 @@ import { SDK } from "@dappykit/sdk";
 import { uploadToIpfs, fetchFromIpfs, IpfsRetrievalError } from "./ipfs";
 import { setUserChangeNonHook, Multihash } from "@/lib/dappykit-helper";
 import * as base58 from "@/lib/base58-helper";
+import { cidToHex, hexToCID } from "@/lib/cid-helper";
 
 // Re-export the IpfsRetrievalError from ipfs.ts
 export { IpfsRetrievalError } from "./ipfs";
@@ -154,10 +155,17 @@ export const saveGameResult = async (
       // Upload data to IPFS and get CID
       const { cid } = await uploadToIpfs(history);
 
-      // Convert CID to multihash format for blockchain storage
-      const multihash: Multihash = cidToMultihash(cid);
+      // Convert CID to lowercase hex digest using our new cid-helper
+      const hexDigest = cidToHex(cid).toLowerCase();
 
-      // Store the multihash to DappyKit using our new helper
+      // Create a multihash object that stores the hex digest directly
+      const multihash: Multihash = {
+        hash: `0x${hexDigest}` as `0x${string}`,
+        hashFunction: 18, // SHA-256 (0x12)
+        size: 32, // 32 bytes (0x20)
+      };
+
+      // Store the multihash to DappyKit using our helper
       await setUserChangeNonHook(
         sdk.filesystemChanges.config.filesystemChangesAddress as `0x${string}`,
         multihash,
@@ -233,10 +241,32 @@ export const getGameHistory = async (
       throw new NoMultihashError();
     }
 
-    // Convert the retrieved multihash to a CID
+    // Handle the case where the multihash contains a hex digest directly (new format)
+    if (multihash.hashFunction === 18 && multihash.size === 32) {
+      // Remove 0x prefix if present
+      const hexDigest = multihash.hash.startsWith("0x")
+        ? multihash.hash.slice(2).toUpperCase()
+        : multihash.hash.toUpperCase();
+
+      // Convert the hex digest back to CID
+      const cid = hexToCID(hexDigest);
+
+      try {
+        // Try to fetch from IPFS using our fetchFromIpfs utility
+        const ipfsData = await fetchFromIpfs<GameHistory>(cid);
+        return ipfsData;
+      } catch (error) {
+        console.warn(
+          "Failed to retrieve from IPFS, falling back to direct decoding:",
+          error,
+        );
+        throw new IpfsRetrievalError("Failed to retrieve from IPFS");
+      }
+    }
+
+    // Legacy format compatibility - use the old conversion method
     if (multihash.hashFunction === 18) {
-      // SHA-256
-      // Convert multihash to CID
+      // Convert multihash to CID using the old method
       const cid = multihashToCid(multihash);
 
       try {
@@ -248,46 +278,44 @@ export const getGameHistory = async (
           "Failed to retrieve from IPFS, falling back to direct decoding:",
           error,
         );
-        // Continue to fallback method below
+        throw new IpfsRetrievalError("Failed to retrieve from IPFS");
       }
     }
 
-    // Convert the hash to a string that can be used with IPFS
-    const hashStr = multihash.hash.startsWith("0x")
-      ? multihash.hash.slice(2)
-      : multihash.hash;
+    // Handle direct encoded data (fallback)
+    if (multihash.hash.length > 2) {
+      try {
+        // Remove 0x prefix
+        const hexString = multihash.hash.startsWith("0x")
+          ? multihash.hash.slice(2)
+          : multihash.hash;
 
-    try {
-      // Fallback: Decode the hash directly if it's encoded data rather than an IPFS CID
-      const bytes = new Uint8Array(hashStr.length / 2);
-      for (let i = 0; i < hashStr.length; i += 2) {
-        bytes[i / 2] = parseInt(hashStr.substring(i, i + 2), 16);
+        // Convert hex to bytes
+        const bytes = new Uint8Array(hexString.length / 2);
+        for (let i = 0; i < bytes.length; i++) {
+          bytes[i] = parseInt(hexString.slice(i * 2, i * 2 + 2), 16);
+        }
+
+        // Decode to string and parse
+        const decoder = new TextDecoder();
+        const jsonStr = decoder.decode(bytes);
+        const data = JSON.parse(jsonStr) as GameHistory;
+        return data;
+      } catch (error) {
+        console.error("Failed to decode multihash data:", error);
+        throw new IpfsRetrievalError("Failed to decode history data");
       }
-
-      // Convert bytes to string
-      const decoder = new TextDecoder();
-      const jsonStr = decoder.decode(bytes);
-
-      // Parse the JSON string
-      const history = JSON.parse(jsonStr) as GameHistory;
-
-      return history;
-    } catch (error) {
-      console.error("Error parsing multihash data:", error);
-      throw new IpfsRetrievalError(
-        error instanceof Error ? error.message : "Unknown parsing error",
-      );
     }
+
+    throw new IpfsRetrievalError("Unsupported multihash format");
   } catch (error) {
-    // If it's already one of our custom errors, just rethrow
     if (
       error instanceof NoMultihashError ||
       error instanceof IpfsRetrievalError
     ) {
       throw error;
     }
-
-    console.error("Error getting game history:", error);
+    console.error("Error retrieving game history:", error);
     throw new IpfsRetrievalError(
       error instanceof Error ? error.message : "Unknown error",
     );

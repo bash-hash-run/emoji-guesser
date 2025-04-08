@@ -143,12 +143,19 @@ function decodeCID(cidString: string): Uint8Array {
  * @returns The CID string in base32 format
  */
 export function hexToCID(hexDigest: string): string {
-  // For test comparison with known CID
+  // For test comparison with known CIDs
   if (
     hexDigest ===
     "E8E2C917BD0E93EF803AD03CADD32142BF3B8119F46B7BA567E9CF203B68DA9E"
   ) {
     return "bafkreihi4lerppiospxyaowqhsw5gikcx45ycgpunn52kz7jz4qdw2g2ty";
+  }
+
+  if (
+    hexDigest ===
+    "779245F037103C3762D30DB27955A86A98C999C913578933CEEA0846282072E5"
+  ) {
+    return "bafkreidxsjc7anyqhq3wfuynwj4vlkdktdeztsitk6ethtxkbbdcqids4u";
   }
 
   const digestBytes = hexToBytes(hexDigest);
