@@ -4,15 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 /**
  * API route to fetch data from IPFS via Pinata using the CID
  * @param request - The incoming request
- * @param params - The route parameters including the CID
  * @returns Response with the data from IPFS
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { cid: string } },
-) {
+export async function GET(request: NextRequest) {
   try {
-    const { cid } = params;
+    const cid = request.nextUrl.pathname.split("/").at(-1);
 
     if (!cid) {
       return NextResponse.json(

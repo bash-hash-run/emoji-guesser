@@ -2,6 +2,8 @@
 
 import { SDK } from "@dappykit/sdk";
 import { uploadToIpfs, fetchFromIpfs, IpfsRetrievalError } from "./ipfs";
+import { setUserChangeNonHook, Multihash } from "@/lib/dappykit-helper";
+import * as base58 from "@/lib/base58-helper";
 
 // Re-export the IpfsRetrievalError from ipfs.ts
 export { IpfsRetrievalError } from "./ipfs";
@@ -34,6 +36,80 @@ export class NoMultihashError extends Error {
     this.name = "NoMultihashError";
   }
 }
+
+/**
+ * Converts an IPFS CID to a bytes32 compatible multihash by removing the function code and size
+ * @param cid - IPFS CID string (e.g., "bafkreihpdnlk3k5mqvlvcrs524df7idkullo4thmkhq6uy7vwac6c25c4i")
+ * @returns An object containing hash, hashFunction and size for blockchain storage
+ */
+export const cidToMultihash = (cid: string): Multihash => {
+  // Decode the CID using our base58 helper
+  const decoded = cid.startsWith("Qm")
+    ? base58.decode(cid) // Handle CIDv0 (Qm...)
+    : base58.decode(cid.slice(1)); // Handle CIDv1 (b...)
+
+  // For CIDv0, the first two bytes are the hash function (0x12) and size (0x20)
+  // For CIDv1, we need to extract the actual multihash portion
+  let hashBytes: Uint8Array;
+  let hashFunction: number;
+  let size: number;
+
+  if (cid.startsWith("Qm")) {
+    // CIDv0: Standard sha2-256 hash with multihash prefix
+    hashFunction = decoded[0]; // Should be 0x12 (18 in decimal) for sha2-256
+    size = decoded[1]; // Should be 0x20 (32 in decimal) for 256 bits
+    hashBytes = decoded.slice(2); // Remove the multihash prefix
+  } else {
+    // CIDv1: Find the multihash part (more complex)
+    // For simplicity in this implementation, we'll assume it's a sha2-256 hash
+    // as that's the most common in IPFS
+    hashFunction = 18; // 0x12 in decimal (sha2-256)
+    size = 32; // 0x20 in decimal (256 bits)
+
+    // In a proper implementation, we would parse the CID format more carefully
+    // We're extracting the actual hash bytes from the CID
+    // This is a simplified approach and may need adjustment for different CID formats
+    hashBytes = decoded.slice(-32); // Take the last 32 bytes as the hash
+  }
+
+  // Convert to hex string with 0x prefix
+  const hashHex = "0x" + Buffer.from(hashBytes).toString("hex");
+
+  return {
+    hash: hashHex as `0x${string}`,
+    hashFunction,
+    size,
+  };
+};
+
+/**
+ * Converts a multihash object back to an IPFS CID
+ * @param multihash - Multihash object containing hash, hashFunction and size
+ * @returns IPFS CID string
+ */
+export const multihashToCid = (multihash: {
+  hash: string;
+  hashFunction: number;
+  size: number;
+}): string => {
+  // Remove 0x prefix if present
+  const hashHex = multihash.hash.startsWith("0x")
+    ? multihash.hash.slice(2)
+    : multihash.hash;
+
+  // Create buffer for the full multihash (prefix + digest)
+  const buffer = Buffer.alloc(2 + hashHex.length / 2);
+
+  // Set the hash function and size bytes
+  buffer[0] = multihash.hashFunction;
+  buffer[1] = multihash.size;
+
+  // Add the hash digest
+  Buffer.from(hashHex, "hex").copy(buffer, 2);
+
+  // Encode to base58 using our helper
+  return base58.encode(new Uint8Array(buffer));
+};
 
 /**
  * Saves the game result to DappyKit
@@ -76,17 +152,16 @@ export const saveGameResult = async (
 
     try {
       // Upload data to IPFS and get CID
-      const { cid, size } = await uploadToIpfs(history);
+      const { cid } = await uploadToIpfs(history);
 
-      // Create a multihash object using the IPFS CID
-      const multihash = {
-        hash: `0x${cid}`, // Add 0x prefix for blockchain storage
-        hashFunction: 1, // 1 is for SHA-256 (most common in IPFS)
-        size: size,
-      };
+      // Convert CID to multihash format for blockchain storage
+      const multihash: Multihash = cidToMultihash(cid);
 
-      // Store the multihash to DappyKit
-      await sdk.filesystemChanges.setUserChange(multihash);
+      // Store the multihash to DappyKit using our new helper
+      await setUserChangeNonHook(
+        sdk.filesystemChanges.config.filesystemChangesAddress as `0x${string}`,
+        multihash,
+      );
 
       return true;
     } catch (error) {
@@ -103,18 +178,20 @@ export const saveGameResult = async (
       const data = encoder.encode(historyStr);
 
       // Create a multihash object (simplified for example)
-      const multihash = {
-        hash:
-          "0x" +
+      const multihash: Multihash = {
+        hash: ("0x" +
           Array.from(data)
             .map((b) => b.toString(16).padStart(2, "0"))
-            .join(""),
+            .join("")) as `0x${string}`,
         hashFunction: 1, // Example hash function ID
         size: data.length,
       };
 
-      // Store the multihash to DappyKit
-      await sdk.filesystemChanges.setUserChange(multihash);
+      // Store the multihash to DappyKit using our new helper
+      await setUserChangeNonHook(
+        sdk.filesystemChanges.config.filesystemChangesAddress as `0x${string}`,
+        multihash,
+      );
       return true;
     }
   } catch (error) {
@@ -156,31 +233,31 @@ export const getGameHistory = async (
       throw new NoMultihashError();
     }
 
+    // Convert the retrieved multihash to a CID
+    if (multihash.hashFunction === 18) {
+      // SHA-256
+      // Convert multihash to CID
+      const cid = multihashToCid(multihash);
+
+      try {
+        // Try to fetch from IPFS using our fetchFromIpfs utility
+        const ipfsData = await fetchFromIpfs<GameHistory>(cid);
+        return ipfsData;
+      } catch (error) {
+        console.warn(
+          "Failed to retrieve from IPFS, falling back to direct decoding:",
+          error,
+        );
+        // Continue to fallback method below
+      }
+    }
+
     // Convert the hash to a string that can be used with IPFS
     const hashStr = multihash.hash.startsWith("0x")
       ? multihash.hash.slice(2)
       : multihash.hash;
 
     try {
-      // First, try to get data from IPFS if it looks like an IPFS hash
-      if (
-        multihash.hashFunction === 1 &&
-        multihash.size > 0 &&
-        hashStr.length < 100
-      ) {
-        try {
-          // Try to fetch from IPFS using our fetchFromIpfs utility
-          const ipfsData = await fetchFromIpfs<GameHistory>(hashStr);
-          return ipfsData;
-        } catch (error) {
-          console.warn(
-            "Failed to retrieve from IPFS, falling back to direct decoding:",
-            error,
-          );
-          // Continue to fallback method below
-        }
-      }
-
       // Fallback: Decode the hash directly if it's encoded data rather than an IPFS CID
       const bytes = new Uint8Array(hashStr.length / 2);
       for (let i = 0; i < hashStr.length; i += 2) {
